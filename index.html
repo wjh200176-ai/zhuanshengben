@@ -89,17 +89,47 @@
         .final-score { font-size: 60px; color: #e74c3c; font-weight: bold; margin: 10px 0;}
         .score-details { text-align: left; margin: 20px 0; font-size: 16px; line-height: 1.8;}
 
-        /* 就在这里添加手机适配代码 */
+       /* 就在这里添加手机适配代码 (终极修复版) */
         @media (max-width: 600px) {
+            /* 1. 彻底解除屏幕高度锁定，允许手机原生自然滚动（解决划不动的问题） */
+            body { height: auto; display: block; overflow-x: hidden; }
+            .main-content { padding: 10px; display: block; overflow: visible; }
+            
+            /* 2. 释放面板高度限制，缩小内边距（解决显示不全、边缘溢出的问题） */
+            .left-panel, .right-panel { 
+                padding: 15px; 
+                display: block; 
+                width: 100%; 
+                height: auto !important; 
+                overflow: visible; 
+                box-sizing: border-box;
+                margin-bottom: 15px;
+            }
+            
+            /* 3. 修复考试界面的高度限制 */
+            #exam-screen { height: auto !important; }
+            .setup-screen { height: auto; padding: 30px 0; }
+            
+            /* 4. 优化头部，缩小大标题字体，防止挤占太多答题空间 */
+            header { padding: 10px; flex-direction: column; gap: 10px; text-align: center; }
+            header h1 { font-size: 16px; line-height: 1.4; }
+            .header-info { width: 100%; justify-content: space-between; }
 
-            header { padding: 10px 15px; flex-direction: column; gap: 10px; text-align: center; }
-            .nav-bar { flex-direction: column; }
-            .main-content { padding: 10px; flex-direction: column; }
-            .left-panel, .right-panel { flex: none; width: 100%; }
-            .grid { grid-template-columns: repeat(6, 1fr); } 
+            /* 5. 导航按钮改为横向紧凑排列，更符合触屏习惯 */
+            .nav-bar { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+            .nav-btn { padding: 8px 0; font-size: 14px; flex: 1 1 30%; }
+            
+            /* 6. 题目字体与答题卡微调，适应小屏幕 */
+            .q-title { font-size: 16px; padding: 12px; }
+            .options-box label { padding: 12px; font-size: 15px; margin: 8px 0; }
+            .grid { grid-template-columns: repeat(6, 1fr); }
+            
+            /* 7. 优化底部按钮区域，防止挤在一起 */
+            .bottom-actions { flex-wrap: wrap; gap: 10px; justify-content: center; }
+            .bottom-actions .btn { font-size: 14px; padding: 10px 15px; }
         }
     </style>
-</head><body>
+</head>
 
 <header>
     <h1>2026辽宁省专升本计算机组技能科目模考系统（退伍士兵专用）</h1>
