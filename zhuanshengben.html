@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026辽宁省专升本计算机组技能科目模考系统（退伍士兵专用）</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; color: #333; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;}
+        header h1 { margin: 0; font-size: 20px; }
+        .header-info { display: flex; gap: 20px; align-items: center; font-size: 16px; }
+        .timer { font-weight: bold; color: #f1c40f; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; letter-spacing: 1px;}
+        .main-content { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;}
+        
+        .left-panel { flex: 3; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
+        
+        .setup-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px;}
+        .setup-screen h2 { color: #2c3e50; margin-bottom: 5px; text-align: center;}
+        .setup-screen .subtitle { color: #7f8c8d; font-size: 15px; margin-top: 0; margin-bottom: 20px; font-weight: bold;}
+        .setup-screen select { padding: 12px; font-size: 16px; border-radius: 5px; border: 1px solid #bdc3c7; width: 90%; max-width: 320px; cursor: pointer;}
+        
+        /* 随机组卷设置区 */
+        .random-settings { display: none; flex-direction: column; gap: 10px; width: 90%; max-width: 320px; box-sizing: border-box; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;}
+        .random-settings div { display: flex; justify-content: space-between; align-items: center;}
+        .random-settings input { width: 80px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 4px;}
+
+        .btn-start { padding: 15px 50px; font-size: 18px; background: #3498db; color: white; border: none; border-radius: 30px; cursor: pointer; transition: 0.3s; font-weight: bold; box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3); margin-top: 10px;}
+        .btn-start:hover { background: #2980b9; transform: translateY(-2px);}
+
+        /* 顶部模式切换按钮组 */
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; gap: 10px; align-items: center;}
+        .nav-btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; background-color: #3498db; color: white; font-size: 16px; transition: 0.3s; flex: 1; font-weight: bold; text-align: center;}
+        .nav-btn:hover { background: #2980b9; }
+        .nav-btn.active { background-color: #2c3e50; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+        .btn-wrong-book { font-size: 14px; background-color: #e74c3c;}
+        .btn-wrong-book:hover { background-color: #c0392b;}
+        .btn-wrong-book.active { background-color: #922b21;}
+
+        #exam-screen { display: none; flex-direction: column; height: 100%;}
+        .q-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px; margin-bottom: 20px;}
+        .q-type-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:8px; background-color: #333; }
+        .q-title { font-size: 18px; line-height: 1.6; font-weight: 500; margin-bottom: 20px; background: #fffbe6; padding: 15px; border-left: 5px solid #f1c40f; border-radius: 4px;}
+        
+        .options-box label { display: block; padding: 15px; margin: 10px 0; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 16px;}
+        .options-box label:hover { background: #e9ecef; border-color: #bdc3c7;}
+        .options-box input[type="radio"] { transform: scale(1.3); margin-right: 12px; cursor: pointer;}
+        .text-input { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: 0.3s; font-family: inherit;}
+        .text-input:focus { border-color: #3498db; outline: none; }
+        .practical-notice { background-color: #fdebd0; color: #d35400; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #f39c12; font-size: 15px; line-height: 1.5;}
+
+        .bottom-actions { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 2px solid #ecf0f1;}
+        .btn { padding: 10px 25px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
+        .btn-nav { background: #95a5a6; color: white;}
+        .btn-nav:hover { background: #7f8c8d;}
+        .btn-check-ans { background: #27ae60; color: white;}
+        .btn-check-ans:hover { background: #219653;}
+        .btn-mark { background: #fff3e0; color: #d35400; border: 1px solid #f39c12;}
+        .btn-mark.active { background: #f39c12; color: white;}
+        
+        .right-panel { flex: 1; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
+        .sheet-header { font-size: 18px; font-weight: bold; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-bottom: 15px; text-align: center;}
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; overflow-y: auto; padding-right: 5px;}
+        .grid-btn { padding: 8px 0; text-align: center; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 14px;}
+        .grid-btn:hover { border-color: #3498db; }
+        .grid-btn.answered { background: #d6eaf8; border-color: #3498db; color: #2980b9; }
+        .grid-btn.marked { background: #fdebd0; border-color: #f39c12; color: #d35400; }
+        .grid-btn.current { box-shadow: 0 0 0 2px #3498db; border-color: #3498db;}
+        .grid-btn.correct { background: #2ecc71; border-color: #27ae60; color: white; }
+        .grid-btn.wrong { background: #e74c3c; border-color: #c0392b; color: white; }
+        .grid-btn.partial { background: #f39c12; border-color: #d35400; color: white; } 
+        
+        .submit-area { margin-top: 20px; text-align: center;}
+        .btn-submit-paper { width: 100%; padding: 15px; background: #27ae60; color: white; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .btn-submit-paper:hover { background: #219653;}
+
+        .review-box { margin-top: 20px; padding: 20px; border-radius: 8px; display: none; background: #f8f9fa; border: 1px solid #dee2e6; margin-bottom: 20px;}
+        .review-box h3 { margin-top: 0; font-size: 16px; color: #2c3e50;}
+        .answer-compare { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 15px; border-radius: 5px; font-size: 15px;}
+        .compare-correct { background: #d4edda; border-left: 4px solid #28a745;}
+        .compare-wrong { background: #f8d7da; border-left: 4px solid #dc3545;}
+        .compare-manual { background: #fff3e0; border-left: 4px solid #f39c12;}
+        .your-answer { color: #dc3545; font-weight: bold; white-space: pre-wrap;}
+        .std-answer { color: #28a745; font-weight: bold; white-space: pre-wrap;}
+        .analysis-text { line-height: 1.6; color: #555; border-top: 1px dashed #ccc; padding-top: 15px;}
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100;}
+        .score-modal { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; box-sizing: border-box; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
+        .score-modal h2 { margin-top: 0; color: #2c3e50;}
+        .final-score { font-size: 60px; color: #e74c3c; font-weight: bold; margin: 10px 0;}
+        .score-details { text-align: left; margin: 20px 0; font-size: 16px; line-height: 1.8;}
+
+        /* 就在这里添加手机适配代码 */
+        @media (max-width: 600px) {
+
+            header { padding: 10px 15px; flex-direction: column; gap: 10px; text-align: center; }
+            .nav-bar { flex-direction: column; }
+            .main-content { padding: 10px; flex-direction: column; }
+            .left-panel, .right-panel { flex: none; width: 100%; }
+            .grid { grid-template-columns: repeat(6, 1fr); } 
+        }
+    </style>
+</head><body>
+
+<header>
+    <h1>2026辽宁省专升本计算机组技能科目模考系统（退伍士兵专用）</h1>
+    <div class="header-info">
+        <span class="timer" id="timer-display">90:00</span>
+        <button class="btn btn-nav" style="padding: 5px 10px; font-size: 14px;" onclick="location.reload()">返回主页</button>
+    </div>
+</header>
+
+<div class="main-content">
+    <div class="left-panel">
+        
+        <div class="nav-bar" id="top-nav">
+            <button id="mode-paper" class="nav-btn active" onclick="switchMode('paper')">分类刷题</button>
+            <button id="mode-random" class="nav-btn" onclick="switchMode('random')">随机组卷</button>
+            <button id="mode-wrong" class="nav-btn btn-wrong-book" onclick="switchMode('wrong')">错题本 (<span id="wrong-count">0</span>个)</button>
+        </div>
+
+        <div class="setup-screen" id="setup-screen">
+            <h2>2026辽宁省专升本计算机组技能科目模考系统<br>（退伍士兵专用）</h2>
+            <p class="subtitle">极光矩阵开发（v：jiguangjuzhen）</p>
+            
+            <select id="select-paper">
+                </select>
+
+            <div id="random-settings" class="random-settings">
+                <div style="text-align: center; color: #e74c3c; font-size: 14px; margin-bottom: 5px;">请自行输入需要抽取的题目数量：</div>
+                <div><span>选择题：</span><input type="number" id="num-choice" value="15" min="0"></div>
+                <div><span>判断题：</span><input type="number" id="num-judge" value="15" min="0"></div>
+                <div><span>填空题：</span><input type="number" id="num-fill" value="15" min="0"></div>
+                <div><span>实操题：</span><input type="number" id="num-prac" value="5" min="0"></div>
+            </div>
+
+            <button class="btn-start" onclick="startExam()">开始刷题</button>
+        </div>
+
+        <div id="exam-screen">
+            <div class="q-header">
+                <div style="display: flex; align-items: center;">
+                    <span id="q-type-dot" class="q-type-dot"></span>
+                    <span style="color:#7f8c8d; font-weight: bold; font-size: 16px;">第 <span id="q-current-num">1</span> 题</span>
+                </div>
+                <button id="btn-mark" class="btn btn-mark" onclick="toggleMark()">📌 标记疑问</button>
+            </div>
+            
+            <div id="q-text" class="q-title">这里是题目内容...</div>
+            <div id="input-container" class="options-box"></div>
+            
+            <div id="review-box" class="review-box">
+                <h3>📜 判题与解析</h3>
+                <div id="answer-compare" class="answer-compare"></div>
+                <div id="analysis-text" class="analysis-text"></div>
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn btn-nav" onclick="navQuestion(-1)">⬅ 上一题</button>
+                <button id="btn-check-ans" class="btn btn-check-ans" onclick="checkCurrentQuestion()">提交本题并看解析</button>
+                <button class="btn btn-nav" onclick="navQuestion(1)">下一题 ➡</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel" id="right-panel" style="display: none;">
+        <div class="sheet-header">答题卡 (<span id="sheet-progress">0/0</span>)</div>
+        <div class="grid" id="sheet-grid"></div>
+        <div class="submit-area">
+            <button id="btn-submit-paper" class="btn-submit-paper" onclick="submitPaper()">结束练习查看总分</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="score-modal">
+    <div class="score-modal">
+        <h2>🎉 练习结束</h2>
+        <div class="final-score" id="final-score">0分</div>
+        <div style="color: #7f8c8d;">总分：100分 (百分制换算)</div>
+        <div class="score-details" id="score-details"></div>
+        <button class="btn btn-start" onclick="closeModalAndReview()">查看错题复盘</button>
+    </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+    // 智能获取题库数据
+    let masterQuizData = [];
+    if (typeof quizData !== 'undefined') masterQuizData = quizData;
+
+    let uniqueData = [];
+    let seenIds = new Set();
+    for (let q of masterQuizData) {
+        if (!seenIds.has(q.id)) {
+            seenIds.add(q.id);
+            uniqueData.push(q);
+        }
+    }
+    masterQuizData = uniqueData;
+
+    let examData = []; 
+    let userAnswers = {}; 
+    let markedQuestions = {}; 
+    let checkedQuestions = {}; // 新增：记录已经判过分的题目
+    let currentIndex = 0;
+    let isSubmitted = false; 
+    let wrongQuestions = JSON.parse(localStorage.getItem('zsb_wrong_questions')) || [];
+    let timerInterval;
+    let totalSeconds = 90 * 60; 
+
+    // 给题型的圆点分配颜色
+    const typeColors = {
+        '选择题': '#3498db',
+        '判断题': '#9b59b6',
+        '填空题': '#e67e22',
+        '实操题': '#e74c3c'
+    };
+
+    window.onload = function() {
+        document.getElementById('wrong-count').innerText = wrongQuestions.length;
+        let paperSelect = document.getElementById('select-paper');
+        for(let i=1; i<=12; i++){
+            paperSelect.options.add(new Option('模拟试卷 ' + i, i));
+        }
+    };
+
+    function switchMode(mode) {
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('mode-' + mode).classList.add('active');
+
+        let paperSelect = document.getElementById('select-paper');
+        let randomSettings = document.getElementById('random-settings');
+
+        if (mode === 'paper') {
+            paperSelect.style.display = 'block';
+            randomSettings.style.display = 'none';
+        } else if (mode === 'random') {
+            paperSelect.style.display = 'none';
+            randomSettings.style.display = 'flex';
+        } else if (mode === 'wrong') {
+            paperSelect.style.display = 'none';
+            randomSettings.style.display = 'none';
+        }
+    }
+
+    function startExam() {
+        if (masterQuizData.length === 0) {
+            alert("❌ 未读取到题库数据！请确保 index.html 旁边有 data.js 文件！"); 
+            return;
+        }
+
+        let activeBtn = document.querySelector('.nav-btn.active');
+        let mode = activeBtn ? activeBtn.id.replace('mode-', '') : 'paper';
+
+        if (mode === 'random') {
+            let nChoice = parseInt(document.getElementById('num-choice').value) || 0;
+            let nJudge = parseInt(document.getElementById('num-judge').value) || 0;
+            let nFill = parseInt(document.getElementById('num-fill').value) || 0;
+            let nPrac = parseInt(document.getElementById('num-prac').value) || 0;
+
+            let config = {'选择题': nChoice, '判断题': nJudge, '填空题': nFill, '实操题': nPrac};
+            let pool = JSON.parse(JSON.stringify(masterQuizData)); 
+            examData = [];
+            
+            let totalRequested = nChoice + nJudge + nFill + nPrac;
+            if (totalRequested === 0) {
+                alert("⚠️ 请至少设置抽取1道题！");
+                return;
+            }
+
+            for (let type in config) {
+                let typeQs = pool.filter(q => q.type === type);
+                typeQs.sort(() => 0.5 - Math.random()); 
+                examData = examData.concat(typeQs.slice(0, config[type]));
+            }
+        } else if (mode === 'wrong') {
+            if(wrongQuestions.length === 0) {
+                alert("🎉 你的错题本是空的！快去刷几套卷子吧！");
+                return;
+            }
+            examData = JSON.parse(JSON.stringify(wrongQuestions));
+        } else {
+            let paperId = parseInt(document.getElementById('select-paper').value);
+            examData = masterQuizData.filter(q => q.paper === paperId);
+        }
+
+        if(examData.length === 0) { alert("此条件下没有题目！"); return;}
+
+        userAnswers = {};
+        markedQuestions = {};
+        checkedQuestions = {}; // 重置判分记录
+        currentIndex = 0;
+        isSubmitted = false;
+
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('top-nav').style.display = 'none'; 
+        document.getElementById('exam-screen').style.display = 'flex';
+        document.getElementById('right-panel').style.display = 'flex';
+
+        generateSheetGrid();
+        renderQuestion(0);
+        startTimer();
+    }
+
+    function generateSheetGrid() {
+        let grid = document.getElementById('sheet-grid');
+        grid.innerHTML = '';
+        examData.forEach((q, i) => {
+            let btn = document.createElement('div');
+            btn.className = 'grid-btn';
+            btn.innerText = i + 1;
+            btn.id = 'grid-btn-' + i;
+            btn.onclick = () => { renderQuestion(i); };
+            grid.appendChild(btn);
+        });
+        updateProgress();
+    }
+
+    function renderQuestion(index) {
+        saveCurrentInput();
+        currentIndex = index;
+        let q = examData[index];
+        let isQuestionChecked = checkedQuestions[index]; // 当前题是否已被判定过
+        
+        document.querySelectorAll('.grid-btn').forEach(btn => btn.classList.remove('current'));
+        document.getElementById('grid-btn-' + index).classList.add('current');
+        
+        document.getElementById('q-current-num').innerText = index + 1;
+        document.getElementById('q-type-dot').style.backgroundColor = typeColors[q.type] || '#333';
+        document.getElementById('q-text').innerText = q.question;
+        
+        let markBtn = document.getElementById('btn-mark');
+        if(markedQuestions[index]) {
+            markBtn.classList.add('active');
+            markBtn.innerText = "🚩 已标记";
+        } else {
+            markBtn.classList.remove('active');
+            markBtn.innerText = "📌 标记疑问";
+        }
+
+        let container = document.getElementById('input-container');
+        container.innerHTML = '';
+        let savedAns = userAnswers[index] || '';
+
+        // 渲染输入区
+        if (q.type === '选择题' || q.type === '判断题') {
+            let opts = q.type === '选择题' ? q.options : ['√ 正确', '× 错误'];
+            opts.forEach(opt => {
+                let val = q.type === '选择题' ? opt.charAt(0) : opt.charAt(0); 
+                let label = document.createElement('label');
+                let radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'q-option';
+                radio.value = val;
+                
+                if(savedAns === val) radio.checked = true;
+                
+                // 如果整个卷子交了，或者这道题已经判过分了，就禁用选择
+                if(isSubmitted || isQuestionChecked) {
+                    radio.disabled = true;
+                } else {
+                    radio.onchange = () => { 
+                        userAnswers[index] = val; 
+                        checkCurrentQuestion(); // 核心修改：点选后立刻触发判题
+                    };
+                }
+                
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(' ' + opt));
+                container.appendChild(label);
+            });
+        } else {
+            if (q.type === '实操题') {
+                let notice = document.createElement('div');
+                notice.className = 'practical-notice';
+                notice.innerHTML = '<b>💻 上机操作题：</b><br>请在本地电脑软件上完成操作。您可在此记录思路，点击“看解析”可核对标准步骤。';
+                container.appendChild(notice);
+            }
+            let input = document.createElement(q.type==='实操题' ? 'textarea' : 'input');
+            if(q.type==='填空题') input.type = 'text';
+            input.className = 'text-input';
+            input.id = 'q-text-input';
+            input.placeholder = q.type==='实操题' ? "(选填)记录思路..." : "请输入答案...";
+            input.value = savedAns;
+            
+            // 已经判过分或者全卷交卷，则只读
+            if(isSubmitted || isQuestionChecked) {
+                input.readOnly = true;
+            } else {
+                input.oninput = () => {
+                    userAnswers[index] = input.value;
+                    updateGridStatus(index);
+                }
+            }
+            container.appendChild(input);
+        }
+
+        // 处理“提交本题看解析”按钮的显示/隐藏
+        let btnCheckAns = document.getElementById('btn-check-ans');
+        if (isSubmitted || isQuestionChecked) {
+            btnCheckAns.style.display = 'none';
+        } else {
+            btnCheckAns.style.display = 'inline-block';
+        }
+
+        // 渲染解析区 (只要判过了，或者交卷了，就显示)
+        let reviewBox = document.getElementById('review-box');
+        if (isSubmitted || isQuestionChecked) {
+            reviewBox.style.display = 'block';
+            let isCorrect = checkCorrectness(q, savedAns);
+            let compareDiv = document.getElementById('answer-compare');
+            
+            if(q.type === '实操题') {
+                compareDiv.className = 'answer-compare compare-manual'; 
+                compareDiv.innerHTML = `
+                    <div style="color:#d35400; font-weight:bold; margin-bottom:5px;">⚠️ 本题为主观题，请自行核对：</div>
+                    <div><b>你的思路：</b><br><span class="your-answer" style="color:#555">${savedAns || '(未填写)'}</span></div>
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;"><b>标准步骤：</b><br><span class="std-answer">${q.answer}</span></div>
+                `;
+            } else {
+                compareDiv.className = 'answer-compare ' + (isCorrect ? 'compare-correct' : 'compare-wrong');
+                compareDiv.innerHTML = `
+                    <div><b>你的答案：</b> <span class="${isCorrect ? 'std-answer' : 'your-answer'}">${savedAns || '(未作答)'}</span></div>
+                    <div><b>正确答案：</b> <span class="std-answer">${q.answer}</span></div>
+                `;
+            }
+            document.getElementById('analysis-text').innerHTML = q.analysis || "无补充解析";
+        } else {
+            reviewBox.style.display = 'none';
+        }
+    }
+
+    // 新增：判定当前这道题，收录错题本
+    function checkCurrentQuestion() {
+        saveCurrentInput();
+        let q = examData[currentIndex];
+        let uAns = userAnswers[currentIndex] || '';
+
+        // 防止误触：填空题如果是空的提醒一下
+        if (uAns.trim() === '' && !confirm("您还没作答，确定直接看答案吗？")) {
+            return;
+        }
+
+        // 标记这题已经判过了
+        checkedQuestions[currentIndex] = true;
+        let isCorrect = q.type === '实操题' ? true : checkCorrectness(q, uAns);
+
+        // 立刻处理错题本逻辑 (实操题除外)
+        if (q.type !== '实操题') {
+            let wrongIndex = wrongQuestions.findIndex(wq => wq.id === q.id);
+            if (!isCorrect && wrongIndex === -1) {
+                wrongQuestions.push(q);
+            } else if (isCorrect && wrongIndex !== -1) {
+                wrongQuestions.splice(wrongIndex, 1);
+            }
+            // 立刻保存到本地并更新数量
+            localStorage.setItem('zsb_wrong_questions', JSON.stringify(wrongQuestions));
+            document.getElementById('wrong-count').innerText = wrongQuestions.length;
+        }
+
+        // 立刻更新答题卡颜色 (绿对，红错，橙色实操)
+        let btn = document.getElementById('grid-btn-' + currentIndex);
+        btn.classList.remove('answered', 'marked');
+        if (q.type === '实操题') {
+            btn.classList.add('partial');
+        } else {
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+        }
+        
+        updateProgress();
+
+        // 重新渲染这道题（禁用输入框，弹出解析）
+        renderQuestion(currentIndex); 
+    }
+
+    function saveCurrentInput() {
+        // 如果已经交卷或者这题已经判过分了，就不再保存（防止覆盖）
+        if(isSubmitted || checkedQuestions[currentIndex]) return;
+        let textInput = document.getElementById('q-text-input');
+        if(textInput) {
+            userAnswers[currentIndex] = textInput.value;
+            updateGridStatus(currentIndex);
+        }
+    }
+
+    function navQuestion(step) {
+        saveCurrentInput();
+        let nextIdx = currentIndex + step;
+        if (nextIdx >= 0 && nextIdx < examData.length) {
+            renderQuestion(nextIdx);
+        } else if (nextIdx >= examData.length && !isSubmitted) {
+            alert("已经是最后一题啦！您可以点击右侧的【结束练习查看总分】按钮。");
+        }
+    }
+
+    function toggleMark() {
+        if(isSubmitted) return;
+        markedQuestions[currentIndex] = !markedQuestions[currentIndex];
+        updateGridStatus(currentIndex);
+        renderQuestion(currentIndex); 
+    }
+
+    function updateGridStatus(index) {
+        // 如果这题已经判分变色了，就不要再被灰色/黄色的样式覆盖掉
+        if(isSubmitted || checkedQuestions[index]) return; 
+        
+        let btn = document.getElementById('grid-btn-' + index);
+        btn.classList.remove('answered', 'marked');
+        if (markedQuestions[index]) btn.classList.add('marked');
+        else if (userAnswers[index] && userAnswers[index].trim() !== '') btn.classList.add('answered');
+        updateProgress();
+    }
+
+    function updateProgress() {
+        let answeredCount = Object.values(userAnswers).filter(val => val.trim() !== '').length;
+        document.getElementById('sheet-progress').innerText = `${answeredCount}/${examData.length}`;
+    }
+
+    function checkCorrectness(q, uAns) {
+        let user = (uAns || '').trim().toLowerCase();
+        let std = (q.answer || '').trim().toLowerCase();
+        if(q.type === '选择题' || q.type === '判断题') return user === std;
+        else if (q.type === '填空题') return user.length > 0 && (std.includes(user) || user.includes(std));
+        else return true; 
+    }
+
+    function submitPaper() {
+        if(isSubmitted) return; 
+        saveCurrentInput();
+        
+        let checkedCount = Object.keys(checkedQuestions).length;
+        if(checkedCount < examData.length) {
+            if(!confirm(`⚠️ 提示：您还有 ${examData.length - checkedCount} 道题没有看解析核对！\n确定要现在结束练习吗？`)) return;
+        }
+
+        clearInterval(timerInterval); 
+        isSubmitted = true;
+        
+        let submitBtn = document.getElementById('btn-submit-paper');
+        submitBtn.innerText = "复盘模式 (可点击题号看解析)";
+        submitBtn.disabled = true;
+        submitBtn.style.background = "#95a5a6";
+
+        let totalScore = 0;
+        let stats = { '选择题':{c:0, t:0, p:2}, '判断题':{c:0, t:0, p:1}, '填空题':{c:0, t:0, p:1}, '实操题':{c:0, t:0, p:10} };
+
+        // 统一清算所有题目
+        examData.forEach((q, i) => {
+            let uAns = userAnswers[i] || '';
+            let isCorrect = q.type === '实操题' ? true : checkCorrectness(q, uAns);
+            
+            // 如果有些题没点“提交本题”，在最后交卷时统一收录错题本
+            if (!checkedQuestions[i] && q.type !== '实操题') {
+                let wrongIndex = wrongQuestions.findIndex(wq => wq.id === q.id);
+                if (!isCorrect && wrongIndex === -1) wrongQuestions.push(q);
+                else if (isCorrect && wrongIndex !== -1) wrongQuestions.splice(wrongIndex, 1);
+            }
+            
+            if(stats[q.type]) {
+                stats[q.type].t++;
+                if(isCorrect) {
+                    stats[q.type].c++;
+                    totalScore += stats[q.type].p;
+                }
+            }
+
+            let btn = document.getElementById('grid-btn-' + i);
+            btn.className = 'grid-btn'; 
+            if(q.type === '实操题') btn.classList.add('partial');
+            else btn.classList.add(isCorrect ? 'correct' : 'wrong');
+        });
+
+        localStorage.setItem('zsb_wrong_questions', JSON.stringify(wrongQuestions));
+        document.getElementById('wrong-count').innerText = wrongQuestions.length;
+
+        let maxScore = (stats['选择题'].t * 2) + (stats['判断题'].t * 1) + (stats['填空题'].t * 1) + (stats['实操题'].t * 10);
+        let finalScore100 = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+
+        let detailHTML = '';
+        for(let type in stats) {
+            if(stats[type].t > 0) {
+                let text = type === '实操题' ? '(主观分)' : `答对 ${stats[type].c}题`;
+                detailHTML += `<div>📝 <b>${type}</b>：共 ${stats[type].t} 题 <span style="float:right; color:#27ae60">${text}</span></div>`;
+            }
+        }
+
+        document.getElementById('final-score').innerText = finalScore100 + "分";
+        document.getElementById('score-details').innerHTML = detailHTML + `<br><div style="color:#e74c3c; font-size:13px; text-align:justify;">注：实操题属于主观题，系统按满分计入，请自行核对参考步骤。答题卡上标红的为客观错题。</div>`;
+        document.getElementById('score-modal').style.display = 'flex';
+        
+        renderQuestion(0); 
+    }
+
+    function closeModalAndReview() {
+        document.getElementById('score-modal').style.display = 'none';
+        let firstWrong = examData.findIndex((q, i) => q.type !== '实操题' && !checkCorrectness(q, userAnswers[i]));
+        if(firstWrong !== -1) renderQuestion(firstWrong);
+        else renderQuestion(0);
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        totalSeconds = 90 * 60; 
+        updateTimerUI();
+        timerInterval = setInterval(() => {
+            totalSeconds--;
+            updateTimerUI();
+            if(totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                alert("⏳ 时间到！系统已自动为您结束练习。");
+                submitPaper();
+            }
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        let m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        let s = (totalSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').innerText = `${m}:${s}`;
+        if(totalSeconds < 300) document.getElementById('timer-display').style.color = '#e74c3c'; 
+    }
+</script>
+</body>
+</html>
